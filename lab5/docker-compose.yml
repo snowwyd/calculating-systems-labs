@@ -1,0 +1,41 @@
+# Docker Compose для Lab5
+# Убрали version - он устарел в новых версиях Docker Compose
+
+services:
+  product-service:
+    build:
+      context: ./product-service
+      dockerfile: Dockerfile
+    container_name: lab5_product_service
+    ports:
+      - "8081:8081"
+    networks:
+      - lab5-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8081/products"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  order-service:
+    build:
+      context: ./order-service
+      dockerfile: Dockerfile
+    container_name: lab5_order_service
+    ports:
+      - "8082:8082"
+    networks:
+      - lab5-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8082/orders"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  lab5-network:
+    driver: bridge

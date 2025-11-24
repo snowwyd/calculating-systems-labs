@@ -1,0 +1,9 @@
+*.exe
+*.test
+.git
+.gitignore
+README.md
+docker-compose.yml
+Dockerfile
+kubernetes/
+
