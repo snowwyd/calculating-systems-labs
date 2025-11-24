@@ -126,28 +126,9 @@ curl http://localhost:8083/inventory
 
 Здесь можно посмотреть очереди, сообщения и статистику.
 
-## Структура проекта
-
-```
-lab3/
-├── docker-compose.yml          # RabbitMQ
-├── start-services.bat          # Запуск всех сервисов
-├── stop-services.bat           # Остановка
-├── test-scenario.bat           # Тестовый сценарий
-├── inventory-service/
-│   ├── main.go                 # REST API склада
-│   └── go.mod
-├── order-service/
-│   ├── main.go                 # REST API + синхр./асинхр. коммуникация
-│   └── go.mod
-└── notification-service/
-    ├── main.go                 # Слушатель RabbitMQ
-    └── go.mod
-```
-
 ## Особенности реализации
 
-### ✅ Синхронная коммуникация (REST API)
+### Синхронная коммуникация (REST API)
 
 Order Service делает HTTP запросы к Inventory Service:
 - `POST /inventory/check` - проверка наличия товара
@@ -155,7 +136,7 @@ Order Service делает HTTP запросы к Inventory Service:
 
 **Клиент ждёт** ответа от обоих сервисов перед получением результата.
 
-### ✅ Асинхронная коммуникация (RabbitMQ)
+### Асинхронная коммуникация (RabbitMQ)
 
 Order Service отправляет сообщение в очередь RabbitMQ после создания заказа.
 Notification Service **независимо** получает и обрабатывает эти сообщения.
@@ -195,12 +176,6 @@ netstat -ano | findstr "8083"
 ```cmd
 stop-services.bat
 ```
-
-## Требования
-
-- Docker (для RabbitMQ)
-- Go 1.21+
-- curl (для тестирования)
 
 ## Установка зависимостей
 

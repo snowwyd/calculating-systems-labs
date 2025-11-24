@@ -1,21 +1,5 @@
 # Task Management REST API
 
-## Структура проекта
-
-### Сервер (REST API)
-- `main.go` - Точка входа приложения
-- `models.go` - Модели данных (Order, Task)
-- `storage.go` - Логика in-memory хранилища
-- `handlers.go` - HTTP обработчики запросов
-- `router.go` - Настройка маршрутов
-
-### Клиент (Вычислительный сервис)
-- `client/main.go` - Точка входа клиента
-- `client/models.go` - Модели данных
-- `client/api_client.go` - Клиент для работы с REST API
-- `client/scheduler.go` - Планировщик выполнения задач
-- `client/optimizer.go` - Поиск оптимальной последовательности
-
 ## Возможности API
 
 ### Задачи (Orders)

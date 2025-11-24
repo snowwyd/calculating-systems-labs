@@ -2,14 +2,14 @@
 
 Развертывание микросервисной архитектуры с помощью Docker Compose и Kubernetes.
 
-## ⚡ Быстрый старт (Docker Compose - рекомендуется)
+## Быстрый старт (Docker Compose - рекомендуется)
 
 ```cmd
 # 1. Собрать образы
-build-images.bat
+scripts\build-images.bat
 
 # 2. Запустить
-start-docker.bat
+scripts\start-docker.bat
 
 # Готово! Сервисы доступны:
 # http://localhost:8081/products
@@ -43,7 +43,7 @@ Order Service (8082) - 2 реплики
 #### 1. Сборка образов
 
 ```cmd
-build-images.bat
+scripts\build-images.bat
 ```
 
 Это создаст Docker образы:
@@ -53,7 +53,7 @@ build-images.bat
 #### 2. Запуск через Docker Compose
 
 ```cmd
-start-docker.bat
+scripts\start-docker.bat
 ```
 
 Сервисы будут доступны на:
@@ -63,7 +63,7 @@ start-docker.bat
 #### 3. Остановка
 
 ```cmd
-stop-docker.bat
+scripts\stop-docker.bat
 ```
 
 ### Ручное управление Docker Compose
@@ -87,7 +87,7 @@ docker-compose up -d --build
 
 ## Часть 2: Kubernetes
 
-### ⚠️ Требования для Kubernetes
+### Требования для Kubernetes
 
 **ВАЖНО:** Kubernetes требует запущенного кластера!
 
@@ -95,7 +95,7 @@ docker-compose up -d --build
 
 1. Откройте Docker Desktop
 2. Settings → Kubernetes
-3. ✅ Включите "Enable Kubernetes"
+3. Включите "Enable Kubernetes"
 4. Нажмите "Apply & Restart"
 5. Дождитесь запуска (зелёная иконка Kubernetes внизу)
 
@@ -115,13 +115,13 @@ minikube docker-env | Invoke-Expression
 #### Проверка готовности
 
 ```cmd
-check-k8s.bat
+scripts\check-k8s.bat
 ```
 
 Этот скрипт проверит:
-- ✅ Установлен ли kubectl
-- ✅ Запущен ли Kubernetes кластер
-- ✅ Доступна ли API Kubernetes
+- Установлен ли kubectl
+- Запущен ли Kubernetes кластер
+- Доступна ли API Kubernetes
 
 ### Структура манифестов
 
@@ -138,7 +138,7 @@ kubernetes/
 #### 0. Проверка готовности (ОБЯЗАТЕЛЬНО!)
 
 ```cmd
-check-k8s.bat
+scripts\check-k8s.bat
 ```
 
 Если кластер не запущен, следуйте инструкциям выше.
@@ -159,13 +159,13 @@ docker build -t lab5/order-service:latest ./order-service
 Или используйте скрипт:
 
 ```cmd
-build-images.bat
+scripts\build-images.bat
 ```
 
 #### 2. Развертывание в Kubernetes
 
 ```cmd
-deploy-k8s.bat
+scripts\deploy-k8s.bat
 ```
 
 Это создаст:
@@ -242,7 +242,7 @@ kubectl get pods -n lab5
 #### 7. Удаление
 
 ```cmd
-delete-k8s.bat
+scripts\delete-k8s.bat
 ```
 
 Или вручную:
@@ -255,7 +255,7 @@ kubectl delete namespace lab5
 ### Docker Compose
 
 ```bash
-# После start-docker.bat
+# После scripts\start-docker.bat
 
 curl http://localhost:8081/products
 curl http://localhost:8082/orders
@@ -274,96 +274,3 @@ curl -X POST http://localhost:8082/orders \
 curl http://localhost:8081/products
 curl http://localhost:8082/orders
 ```
-
-## Особенности реализации
-
-### Docker
-
-✅ **Multi-stage build** - маленький размер образов (~20MB)
-
-✅ **Health checks** - автоматический мониторинг состояния
-
-✅ **Изолированная сеть** - сервисы могут общаться между собой
-
-✅ **Автоперезапуск** - restart: unless-stopped
-
-### Kubernetes
-
-✅ **2 реплики** каждого сервиса - высокая доступность
-
-✅ **Liveness/Readiness проbes** - автоматическая проверка здоровья
-
-✅ **Resource limits** - ограничение CPU и памяти
-
-✅ **ClusterIP Services** - внутренняя балансировка нагрузки
-
-✅ **Ingress** - единая точка входа
-
-✅ **Namespace** - изоляция ресурсов
-
-## Структура проекта
-
-```
-lab5/
-├── docker-compose.yml           # Docker Compose конфигурация
-├── build-images.bat             # Сборка Docker образов
-├── start-docker.bat             # Запуск Docker Compose
-├── stop-docker.bat              # Остановка Docker Compose
-├── check-k8s.bat                # Проверка Kubernetes
-├── deploy-k8s.bat               # Развертывание в K8s
-├── delete-k8s.bat               # Удаление из K8s
-├── product-service/
-│   ├── Dockerfile               # Docker образ
-│   ├── main.go
-│   └── go.mod
-├── order-service/
-│   ├── Dockerfile               # Docker образ
-│   ├── main.go
-│   └── go.mod
-└── kubernetes/
-    ├── namespace.yaml
-    ├── product-service-deployment.yaml
-    ├── order-service-deployment.yaml
-    └── ingress.yaml
-```
-
-## Полезные команды
-
-### Docker
-
-```bash
-# Просмотр логов
-docker-compose logs -f service-name
-
-# Перезапуск сервиса
-docker-compose restart service-name
-
-# Проверка использования ресурсов
-docker stats
-
-# Удалить все (включая volumes)
-docker-compose down -v
-```
-
-### Kubernetes
-
-```bash
-# Описание пода
-kubectl describe pod <pod-name> -n lab5
-
-# Вход в контейнер
-kubectl exec -it <pod-name> -n lab5 -- sh
-
-# Просмотр событий
-kubectl get events -n lab5
-
-# Мониторинг ресурсов
-kubectl top pods -n lab5
-```
-
-## Требования
-
-- Docker Desktop или Docker Engine
-- Docker Compose
-- Kubernetes (опционально, для Part 2)
-- kubectl (опционально, для Part 2)

@@ -6,7 +6,7 @@ Kubernetes (K8s) - это система оркестрации контейне
 
 ## Варианты настройки
 
-### ✅ Вариант 1: Docker Desktop (самый простой для Windows)
+### Вариант 1: Docker Desktop (самый простой для Windows)
 
 #### Шаги:
 
@@ -25,13 +25,13 @@ Kubernetes (K8s) - это система оркестрации контейне
 
 5. **Дождитесь запуска**
    - Внизу Docker Desktop появятся две зелёные иконки:
-     - 🟢 Docker (Engine is running)
-     - 🟢 Kubernetes (is running)
+     - Docker (Engine is running)
+     - Kubernetes (is running)
    - Это может занять 2-5 минут
 
 6. **Проверьте**
    ```cmd
-   check-k8s.bat
+   scripts\check-k8s.bat
    ```
 
 #### Если Kubernetes не запускается в Docker Desktop:
@@ -41,7 +41,7 @@ Kubernetes (K8s) - это система оркестрации контейне
 - В настройках Docker Desktop попробуйте сбросить Kubernetes:
   - Settings → Kubernetes → Reset Kubernetes Cluster
 
-### ✅ Вариант 2: Minikube
+### Вариант 2: Minikube
 
 Если Docker Desktop не работает или вы хотите отдельный кластер.
 
@@ -73,25 +73,25 @@ minikube docker-env | Invoke-Expression
 
 ```cmd
 # Проверка
-check-k8s.bat
+scripts\check-k8s.bat
 
 # Собрать образы
-build-images.bat
+scripts\build-images.bat
 
 # Развернуть
-deploy-k8s.bat
+scripts\deploy-k8s.bat
 ```
 
-### ✅ Вариант 3: Docker Compose (без Kubernetes)
+### Вариант 3: Docker Compose (без Kubernetes)
 
 Если Kubernetes не нужен, используйте Docker Compose:
 
 ```cmd
 # Собрать образы
-build-images.bat
+scripts\build-images.bat
 
 # Запустить через Docker Compose
-start-docker.bat
+scripts\start-docker.bat
 ```
 
 Это проще и быстрее для локальной разработки!
@@ -100,7 +100,7 @@ start-docker.bat
 
 ```cmd
 # Запустите скрипт проверки
-check-k8s.bat
+scripts\check-k8s.bat
 ```
 
 Должно быть:
@@ -111,7 +111,7 @@ check-k8s.bat
 
 ## Типичные ошибки
 
-### ❌ "dial tcp [::1]:8080: connectex: No connection"
+### "dial tcp [::1]:8080: connectex: No connection"
 
 **Проблема:** Kubernetes кластер не запущен
 
@@ -120,7 +120,7 @@ check-k8s.bat
 2. Если используете Minikube - запустите `minikube start`
 3. Или используйте Docker Compose вместо Kubernetes
 
-### ❌ "kubectl: command not found"
+### "kubectl: command not found"
 
 **Проблема:** kubectl не установлен
 
@@ -128,7 +128,7 @@ check-k8s.bat
 - Docker Desktop устанавливает kubectl автоматически
 - Или установите вручную: https://kubernetes.io/docs/tasks/tools/
 
-### ❌ Образы не находятся в Kubernetes
+### Образы не находятся в Kubernetes
 
 **Проблема:** Kubernetes не видит локальные Docker образы
 
@@ -138,7 +138,7 @@ check-k8s.bat
 minikube docker-env | Invoke-Expression
 
 # Пересоберите образы
-build-images.bat
+scripts\build-images.bat
 ```
 
 **Решение для Docker Desktop:**
@@ -182,4 +182,3 @@ kubectl delete namespace lab5
 - [Документация Kubernetes](https://kubernetes.io/docs/home/)
 - [Docker Desktop Kubernetes](https://docs.docker.com/desktop/kubernetes/)
 - [Minikube Docs](https://minikube.sigs.k8s.io/docs/)
-
