@@ -14,7 +14,7 @@ if errorlevel 1 (
     exit /b 1
 )
 echo.
-echo ✓ Inventory Service работает
+echo Inventory Service работает
 echo.
 timeout /t 2 /nobreak > nul
 
@@ -27,7 +27,7 @@ if errorlevel 1 (
     exit /b 1
 )
 echo.
-echo ✓ Заказ создан
+echo Заказ создан
 echo.
 timeout /t 2 /nobreak > nul
 
@@ -41,7 +41,7 @@ curl http://localhost:8083/inventory
 echo.
 echo.
 
-echo ✓ ТЕСТ ЗАВЕРШЕН УСПЕШНО!
+echo ТЕСТ ЗАВЕРШЕН УСПЕШНО!
 echo.
 echo Проверьте окно Notification Service - там должно быть уведомление!
 echo.

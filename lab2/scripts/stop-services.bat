@@ -17,7 +17,7 @@ echo Остановка баз данных...
 docker-compose down
 
 echo.
-echo ✓ Все сервисы остановлены!
+echo Все сервисы остановлены!
 echo.
 pause
 

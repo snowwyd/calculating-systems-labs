@@ -7,7 +7,7 @@ echo.
 docker-compose down
 
 echo.
-echo ✓ Все контейнеры остановлены и удалены!
+echo Все контейнеры остановлены и удалены!
 echo.
 pause
 

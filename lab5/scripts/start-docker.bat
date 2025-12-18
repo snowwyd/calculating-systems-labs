@@ -20,7 +20,7 @@ echo Проверка статуса контейнеров...
 docker-compose ps
 
 echo.
-echo ✓ Сервисы запущены!
+echo Сервисы запущены!
 echo.
 echo Product Service: http://localhost:8081
 echo Order Service:   http://localhost:8082
