@@ -112,4 +112,3 @@ func (s *OrderService) UpdateTaskPredecessors(orderID, taskID int, req UpdatePre
 
 	return task, nil
 }
-

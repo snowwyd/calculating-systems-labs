@@ -147,4 +147,3 @@ func (r *InMemoryRepository) UpdatePredecessors(orderID, taskID int, predecessor
 	}
 	return nil, false
 }
-

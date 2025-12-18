@@ -10,9 +10,6 @@ const serverWaitDuration = 2 * time.Second
 
 func printResults(bestResult Result, elapsed time.Duration) {
 	log.Println("\n=== Результаты вычислений ===")
-	log.Printf("Обработано последовательностей: %d\n", numSequences)
-	log.Printf("Время выполнения: %v\n", elapsed)
-	log.Printf("Скорость: %.0f последовательностей/сек\n", float64(numSequences)/elapsed.Seconds())
 	log.Printf("\nЛучшая найденная последовательность:")
 	log.Printf("  Порядок задач: %v\n", bestResult.Sequence)
 	log.Printf("  Длительность проекта: %d единиц времени\n", bestResult.Duration)
