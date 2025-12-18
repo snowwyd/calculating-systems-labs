@@ -98,7 +98,7 @@ func initRabbitMQ() error {
 		return fmt.Errorf("не удалось объявить очередь: %w", err)
 	}
 
-	log.Println("✓ Подключено к RabbitMQ")
+	log.Println("Подключено к RabbitMQ")
 	return nil
 }
 
@@ -182,7 +182,7 @@ func publishOrderNotification(order *Order) error {
 		return fmt.Errorf("ошибка отправки сообщения: %w", err)
 	}
 
-	log.Printf("✓ Отправлено уведомление о заказе %s в RabbitMQ", order.OrderID)
+	log.Printf("Отправлено уведомление о заказе %s в RabbitMQ", order.OrderID)
 	return nil
 }
 
@@ -205,7 +205,7 @@ func createOrder(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, fmt.Sprintf("Товар %s: %s", item.ProductCode, message), http.StatusBadRequest)
 			return
 		}
-		log.Printf("✓ Товар %s доступен", item.ProductCode)
+		log.Printf("Товар %s доступен", item.ProductCode)
 	}
 
 	// 2. Резервирование товаров
@@ -238,11 +238,11 @@ func createOrder(w http.ResponseWriter, r *http.Request) {
 	orders[order.OrderID] = order
 	mu.Unlock()
 
-	log.Printf("✓ Заказ %s создан", order.OrderID)
+	log.Printf("Заказ %s создан", order.OrderID)
 
 	// 4. Асинхронная отправка уведомления в RabbitMQ
 	if err := publishOrderNotification(order); err != nil {
-		log.Printf("⚠️  Предупреждение: не удалось отправить уведомление: %v", err)
+		log.Printf("Предупреждение: не удалось отправить уведомление: %v", err)
 		// Не возвращаем ошибку клиенту, так как заказ уже создан
 	}
 

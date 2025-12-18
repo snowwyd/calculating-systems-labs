@@ -11,7 +11,7 @@ if errorlevel 1 (
     pause
     exit /b 1
 )
-echo ✓ Product Service собран
+echo Product Service собран
 echo.
 
 echo Сборка Order Service...
@@ -21,10 +21,10 @@ if errorlevel 1 (
     pause
     exit /b 1
 )
-echo ✓ Order Service собран
+echo Order Service собран
 echo.
 
-echo ✓ Все образы успешно собраны!
+echo Все образы успешно собраны!
 echo.
 docker images | findstr "lab5"
 echo.

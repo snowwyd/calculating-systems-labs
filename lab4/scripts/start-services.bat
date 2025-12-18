@@ -18,7 +18,7 @@ echo Запуск GraphQL Gateway на порту 8080...
 start "GraphQL Gateway" cmd /k "cd graphql-gateway && go run ."
 
 echo.
-echo ✓ Все сервисы запущены!
+echo Все сервисы запущены!
 echo.
 echo Product Service:  http://localhost:8081
 echo Order Service:    http://localhost:8082

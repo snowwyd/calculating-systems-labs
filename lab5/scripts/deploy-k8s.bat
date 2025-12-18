@@ -8,14 +8,14 @@ echo Проверка доступности Kubernetes...
 kubectl cluster-info >nul 2>&1
 if errorlevel 1 (
     echo.
-    echo ✗ ОШИБКА: Kubernetes кластер недоступен!
+    echo ОШИБКА: Kubernetes кластер недоступен!
     echo.
     echo Запустите check-k8s.bat для диагностики
     echo.
     pause
     exit /b 1
 )
-echo ✓ Kubernetes кластер доступен
+echo Kubernetes кластер доступен
 echo.
 
 echo Создание namespace...
@@ -34,7 +34,7 @@ echo Создание Ingress...
 kubectl apply -f kubernetes/ingress.yaml
 
 echo.
-echo ✓ Развертывание завершено!
+echo Развертывание завершено!
 echo.
 echo Проверка статуса:
 kubectl get all -n lab5

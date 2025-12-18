@@ -90,15 +90,15 @@ func processOrder(order *Order) {
 		ReceivedAt:     time.Now().Format("2006-01-02 15:04:05"),
 	}
 
-	log.Println("╔════════════════════════════════════════════════════════════════╗")
-	log.Printf("║ НОВОЕ УВЕДОМЛЕНИЕ #%d", notificationCount)
-	log.Println("╠════════════════════════════════════════════════════════════════╣")
-	log.Printf("║ Тип: %s", notification.Type)
-	log.Printf("║ Заказ: %s", notification.OrderID)
-	log.Printf("║ Клиент: %s", notification.CustomerID)
-	log.Printf("║ Сообщение: %s", notification.Message)
-	log.Printf("║ Время: %s", notification.ReceivedAt)
-	log.Println("╚════════════════════════════════════════════════════════════════╝")
+	log.Println("================================================================")
+	log.Printf("НОВОЕ УВЕДОМЛЕНИЕ #%d", notificationCount)
+	log.Println("================================================================")
+	log.Printf("Тип: %s", notification.Type)
+	log.Printf("Заказ: %s", notification.OrderID)
+	log.Printf("Клиент: %s", notification.CustomerID)
+	log.Printf("Сообщение: %s", notification.Message)
+	log.Printf("Время: %s", notification.ReceivedAt)
+	log.Println("================================================================")
 }
 
 func formatNotificationMessage(order *Order) string {
@@ -119,8 +119,8 @@ func main() {
 	defer conn.Close()
 	defer ch.Close()
 
-	log.Println("✓ Подключено к RabbitMQ")
-	log.Printf("✓ Подписка на очередь: %s", queueName)
+	log.Println("Подключено к RabbitMQ")
+	log.Printf("Подписка на очередь: %s", queueName)
 
 	msgs, err := ch.Consume(
 		queueName,
@@ -135,7 +135,7 @@ func main() {
 		log.Fatalf("Не удалось подписаться на очередь: %v", err)
 	}
 
-	log.Println("✓ Ожидание сообщений... (Нажмите Ctrl+C для выхода)")
+	log.Println("Ожидание сообщений... (Нажмите Ctrl+C для выхода)")
 
 	forever := make(chan bool)
 
@@ -143,7 +143,7 @@ func main() {
 		for msg := range msgs {
 			var order Order
 			if err := json.Unmarshal(msg.Body, &order); err != nil {
-				log.Printf("⚠️  Ошибка парсинга сообщения: %v", err)
+				log.Printf("Ошибка парсинга сообщения: %v", err)
 				continue
 			}
 

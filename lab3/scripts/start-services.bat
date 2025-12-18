@@ -26,7 +26,7 @@ echo Запуск Notification Service (слушатель RabbitMQ)...
 start "Notification Service" cmd /k "cd notification-service && go run ."
 
 echo.
-echo ✓ Все сервисы запущены!
+echo Все сервисы запущены!
 echo.
 echo Inventory Service:    http://localhost:8083
 echo Order Service:        http://localhost:8082

@@ -17,7 +17,7 @@ echo Удаление namespace...
 kubectl delete -f kubernetes/namespace.yaml
 
 echo.
-echo ✓ Все ресурсы удалены!
+echo Все ресурсы удалены!
 echo.
 pause
 

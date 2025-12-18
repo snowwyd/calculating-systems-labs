@@ -11,22 +11,22 @@ echo.
 echo Проверка Inventory Service (8083)...
 curl -s -o nul -w "%%{http_code}" http://localhost:8083/inventory >nul 2>&1
 if errorlevel 1 (
-    echo   ✗ Inventory Service недоступен. Подождите...
+    echo   Inventory Service недоступен. Подождите...
     timeout /t 2 /nobreak > nul
     goto check_inventory
 )
-echo   ✓ Inventory Service доступен
+echo   Inventory Service доступен
 echo.
 
 :check_order
 echo Проверка Order Service (8082)...
 curl -s -o nul -w "%%{http_code}" http://localhost:8082/orders >nul 2>&1
 if errorlevel 1 (
-    echo   ✗ Order Service недоступен. Подождите...
+    echo   Order Service недоступен. Подождите...
     timeout /t 2 /nobreak > nul
     goto check_order
 )
-echo   ✓ Order Service доступен
+echo   Order Service доступен
 echo.
 
 echo === Начинаем тестирование ===

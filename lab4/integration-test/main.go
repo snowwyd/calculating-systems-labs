@@ -301,25 +301,24 @@ func printResults() {
 	passedTests := 0
 
 	for service, tests := range services {
-		fmt.Printf("┌─ %s ─────────────────────────────────\n", service)
+		fmt.Printf("%s\n", service)
 		for _, test := range tests {
 			totalTests++
-			status := "✗ FAIL"
+			status := "FAIL"
 			if test.Status == "OK" {
-				status = "✓ OK"
+				status = "OK"
 				passedTests++
 			} else if test.Status == "WARN" {
-				status = "⚠ WARN"
+				status = "WARN"
 				passedTests++
 			}
 
-			fmt.Printf("│  %s  %s", status, test.Test)
+			fmt.Printf("|  %s  %s", status, test.Test)
 			if test.Error != "" {
 				fmt.Printf(" (%s)", test.Error)
 			}
 			fmt.Println()
 		}
-		fmt.Println("└────────────────────────────────────────────")
 		fmt.Println()
 	}
 
@@ -332,16 +331,16 @@ func printResults() {
 	fmt.Println(separator + "\n")
 
 	if passedTests == totalTests {
-		fmt.Println("🎉 ВСЕ ТЕСТЫ ПРОЙДЕНЫ УСПЕШНО!")
+		fmt.Println("ВСЕ ТЕСТЫ ПРОЙДЕНЫ УСПЕШНО!")
 	} else {
-		fmt.Printf("⚠️  НЕКОТОРЫЕ ТЕСТЫ НЕ ПРОЙДЕНЫ (%d из %d)\n", totalTests-passedTests, totalTests)
+		fmt.Printf("НЕКОТОРЫЕ ТЕСТЫ НЕ ПРОЙДЕНЫ (%d из %d)\n", totalTests-passedTests, totalTests)
 	}
 }
 
 func main() {
-	fmt.Println("\n╔════════════════════════════════════════════════════════════════╗")
-	fmt.Println("║      ИНТЕГРАЦИОННОЕ ТЕСТИРОВАНИЕ LAB4 - GraphQL Gateway       ║")
-	fmt.Println("╚════════════════════════════════════════════════════════════════╝\n")
+	fmt.Println("\n================================================================")
+	fmt.Println("      ИНТЕГРАЦИОННОЕ ТЕСТИРОВАНИЕ LAB4 - GraphQL Gateway")
+	fmt.Println("================================================================\n")
 
 	fmt.Println("Проверка доступности сервисов...")
 	time.Sleep(1 * time.Second)
@@ -352,12 +351,12 @@ func main() {
 	graphqlOK := checkServiceAvailability(graphqlURL, "GraphQL Gateway")
 
 	if !productOK || !orderOK || !graphqlOK {
-		fmt.Println("\n⚠️  Не все сервисы доступны! Запустите: start-services.bat")
+		fmt.Println("\nНе все сервисы доступны! Запустите: start-services.bat")
 		printResults()
 		return
 	}
 
-	fmt.Println("\n✓ Все сервисы доступны. Начинаем тестирование...\n")
+	fmt.Println("\nВсе сервисы доступны. Начинаем тестирование...\n")
 
 	// Запуск тестов
 	testProductService()
