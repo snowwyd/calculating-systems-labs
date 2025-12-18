@@ -3,20 +3,20 @@ package main
 import "github.com/gorilla/mux"
 
 // SetupRoutes настраивает маршруты для API
-func SetupRoutes(storage *Storage) *mux.Router {
-	r := mux.NewRouter()
+func SetupRoutes(handler *Handler) *mux.Router {
+	router := mux.NewRouter()
 
 	// Маршруты для заказов
-	r.HandleFunc("/orders", storage.handleCreateOrder).Methods("POST")
-	r.HandleFunc("/orders", storage.handleGetOrders).Methods("GET")
-	r.HandleFunc("/orders/{id}", storage.handleGetOrder).Methods("GET")
-	r.HandleFunc("/orders/{id}", storage.handleUpdateOrder).Methods("PUT")
-	r.HandleFunc("/orders/{id}", storage.handleDeleteOrder).Methods("DELETE")
+	router.HandleFunc("/orders", handler.CreateOrder).Methods("POST")
+	router.HandleFunc("/orders", handler.GetOrders).Methods("GET")
+	router.HandleFunc("/orders/{id}", handler.GetOrder).Methods("GET")
+	router.HandleFunc("/orders/{id}", handler.UpdateOrder).Methods("PUT")
+	router.HandleFunc("/orders/{id}", handler.DeleteOrder).Methods("DELETE")
 
-	// Маршруты для работ
-	r.HandleFunc("/orders/{id}/tasks", storage.handleAddTask).Methods("POST")
-	r.HandleFunc("/orders/{orderId}/tasks/{taskId}", storage.handleDeleteTask).Methods("DELETE")
-	r.HandleFunc("/orders/{orderId}/tasks/{taskId}/predecessors", storage.handleUpdateTaskPredecessors).Methods("PUT")
+	// Маршруты для задач
+	router.HandleFunc("/orders/{id}/tasks", handler.AddTask).Methods("POST")
+	router.HandleFunc("/orders/{orderId}/tasks/{taskId}", handler.DeleteTask).Methods("DELETE")
+	router.HandleFunc("/orders/{orderId}/tasks/{taskId}/predecessors", handler.UpdateTaskPredecessors).Methods("PUT")
 
-	return r
+	return router
 }

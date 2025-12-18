@@ -8,95 +8,120 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// Handler предоставляет HTTP обработчики для API
+type Handler struct {
+	service *OrderService
+}
+
+// NewHandler создаёт новый обработчик
+func NewHandler(service *OrderService) *Handler {
+	return &Handler{service: service}
+}
+
 // Вспомогательные функции для HTTP ответов
 
-func respondJSON(w http.ResponseWriter, data interface{}, status int) {
+func writeJSONResponse(w http.ResponseWriter, data interface{}, statusCode int) {
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(status)
-	json.NewEncoder(w).Encode(data)
+	w.WriteHeader(statusCode)
+	if err := json.NewEncoder(w).Encode(data); err != nil {
+		http.Error(w, "ошибка кодирования ответа", http.StatusInternalServerError)
+	}
 }
 
-func respondError(w http.ResponseWriter, message string, status int) {
-	http.Error(w, message, status)
+func writeErrorResponse(w http.ResponseWriter, err error, statusCode int) {
+	response := ErrorResponse{
+		Error:   http.StatusText(statusCode),
+		Message: err.Error(),
+	}
+	writeJSONResponse(w, response, statusCode)
 }
 
-func parseIDFromRequest(vars map[string]string, key string) (int, error) {
+func extractIDFromPath(vars map[string]string, key string) (int, error) {
 	return strconv.Atoi(vars[key])
 }
 
 // HTTP обработчики для Orders
 
-func (s *Storage) handleCreateOrder(w http.ResponseWriter, r *http.Request) {
-	var data struct {
-		OrderName string `json:"order_name"`
-		StartDate string `json:"start_date"`
-	}
-
-	if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
-		respondError(w, "Invalid request body", http.StatusBadRequest)
+func (h *Handler) CreateOrder(w http.ResponseWriter, r *http.Request) {
+	var req CreateOrderRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeErrorResponse(w, ErrInvalidInput{Field: "body", Message: "невалидный JSON"}, http.StatusBadRequest)
 		return
 	}
 
-	order := s.CreateOrder(data.OrderName, data.StartDate)
-	respondJSON(w, order, http.StatusCreated)
-}
-
-func (s *Storage) handleGetOrders(w http.ResponseWriter, r *http.Request) {
-	orders := s.GetAllOrders()
-	respondJSON(w, orders, http.StatusOK)
-}
-
-func (s *Storage) handleGetOrder(w http.ResponseWriter, r *http.Request) {
-	id, err := parseIDFromRequest(mux.Vars(r), "id")
+	order, err := h.service.CreateOrder(req)
 	if err != nil {
-		respondError(w, "Invalid order ID", http.StatusBadRequest)
+		writeErrorResponse(w, err, http.StatusInternalServerError)
 		return
 	}
 
-	order, exists := s.GetOrder(id)
-	if !exists {
-		respondError(w, "Order not found", http.StatusNotFound)
-		return
-	}
-
-	respondJSON(w, order, http.StatusOK)
+	writeJSONResponse(w, order, http.StatusCreated)
 }
 
-func (s *Storage) handleUpdateOrder(w http.ResponseWriter, r *http.Request) {
-	id, err := parseIDFromRequest(mux.Vars(r), "id")
-	if err != nil {
-		respondError(w, "Invalid order ID", http.StatusBadRequest)
-		return
-	}
-
-	var data struct {
-		OrderName string `json:"order_name"`
-		StartDate string `json:"start_date"`
-	}
-
-	if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
-		respondError(w, "Invalid request body", http.StatusBadRequest)
-		return
-	}
-
-	order, exists := s.UpdateOrder(id, data.OrderName, data.StartDate)
-	if !exists {
-		respondError(w, "Order not found", http.StatusNotFound)
-		return
-	}
-
-	respondJSON(w, order, http.StatusOK)
+func (h *Handler) GetOrders(w http.ResponseWriter, r *http.Request) {
+	orders := h.service.GetAllOrders()
+	writeJSONResponse(w, orders, http.StatusOK)
 }
 
-func (s *Storage) handleDeleteOrder(w http.ResponseWriter, r *http.Request) {
-	id, err := parseIDFromRequest(mux.Vars(r), "id")
+func (h *Handler) GetOrder(w http.ResponseWriter, r *http.Request) {
+	id, err := extractIDFromPath(mux.Vars(r), "id")
 	if err != nil {
-		respondError(w, "Invalid order ID", http.StatusBadRequest)
+		writeErrorResponse(w, ErrInvalidInput{Field: "id", Message: "невалидный ID"}, http.StatusBadRequest)
 		return
 	}
 
-	if !s.DeleteOrder(id) {
-		respondError(w, "Order not found", http.StatusNotFound)
+	order, err := h.service.GetOrder(id)
+	if err != nil {
+		if _, ok := err.(ErrOrderNotFound); ok {
+			writeErrorResponse(w, err, http.StatusNotFound)
+		} else {
+			writeErrorResponse(w, err, http.StatusInternalServerError)
+		}
+		return
+	}
+
+	writeJSONResponse(w, order, http.StatusOK)
+}
+
+func (h *Handler) UpdateOrder(w http.ResponseWriter, r *http.Request) {
+	id, err := extractIDFromPath(mux.Vars(r), "id")
+	if err != nil {
+		writeErrorResponse(w, ErrInvalidInput{Field: "id", Message: "невалидный ID"}, http.StatusBadRequest)
+		return
+	}
+
+	var req UpdateOrderRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeErrorResponse(w, ErrInvalidInput{Field: "body", Message: "невалидный JSON"}, http.StatusBadRequest)
+		return
+	}
+
+	order, err := h.service.UpdateOrder(id, req)
+	if err != nil {
+		if _, ok := err.(ErrOrderNotFound); ok {
+			writeErrorResponse(w, err, http.StatusNotFound)
+		} else {
+			writeErrorResponse(w, err, http.StatusInternalServerError)
+		}
+		return
+	}
+
+	writeJSONResponse(w, order, http.StatusOK)
+}
+
+func (h *Handler) DeleteOrder(w http.ResponseWriter, r *http.Request) {
+	id, err := extractIDFromPath(mux.Vars(r), "id")
+	if err != nil {
+		writeErrorResponse(w, ErrInvalidInput{Field: "id", Message: "невалидный ID"}, http.StatusBadRequest)
+		return
+	}
+
+	if err := h.service.DeleteOrder(id); err != nil {
+		if _, ok := err.(ErrOrderNotFound); ok {
+			writeErrorResponse(w, err, http.StatusNotFound)
+		} else {
+			writeErrorResponse(w, err, http.StatusInternalServerError)
+		}
 		return
 	}
 
@@ -105,82 +130,91 @@ func (s *Storage) handleDeleteOrder(w http.ResponseWriter, r *http.Request) {
 
 // HTTP обработчики для Tasks
 
-func (s *Storage) handleAddTask(w http.ResponseWriter, r *http.Request) {
-	orderID, err := parseIDFromRequest(mux.Vars(r), "id")
+func (h *Handler) AddTask(w http.ResponseWriter, r *http.Request) {
+	orderID, err := extractIDFromPath(mux.Vars(r), "id")
 	if err != nil {
-		respondError(w, "Invalid order ID", http.StatusBadRequest)
+		writeErrorResponse(w, ErrInvalidInput{Field: "id", Message: "невалидный ID заказа"}, http.StatusBadRequest)
 		return
 	}
 
-	var data struct {
-		Task     string `json:"task"`
-		Duration int    `json:"duration"`
-		Resource int    `json:"resource"`
-		Pred     []int  `json:"pred"`
-	}
-
-	if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
-		respondError(w, "Invalid request body", http.StatusBadRequest)
+	var req AddTaskRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeErrorResponse(w, ErrInvalidInput{Field: "body", Message: "невалидный JSON"}, http.StatusBadRequest)
 		return
 	}
 
-	task, exists := s.AddTask(orderID, data.Task, data.Duration, data.Resource, data.Pred)
-	if !exists {
-		respondError(w, "Order not found", http.StatusNotFound)
+	task, err := h.service.AddTask(orderID, req)
+	if err != nil {
+		if _, ok := err.(ErrOrderNotFound); ok {
+			writeErrorResponse(w, err, http.StatusNotFound)
+		} else {
+			writeErrorResponse(w, err, http.StatusInternalServerError)
+		}
 		return
 	}
 
-	respondJSON(w, task, http.StatusCreated)
+	writeJSONResponse(w, task, http.StatusCreated)
 }
 
-func (s *Storage) handleDeleteTask(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) DeleteTask(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	orderID, err := parseIDFromRequest(vars, "orderId")
+	orderID, err := extractIDFromPath(vars, "orderId")
 	if err != nil {
-		respondError(w, "Invalid order ID", http.StatusBadRequest)
-		return
-	}
-	taskID, err := parseIDFromRequest(vars, "taskId")
-	if err != nil {
-		respondError(w, "Invalid task ID", http.StatusBadRequest)
+		writeErrorResponse(w, ErrInvalidInput{Field: "orderId", Message: "невалидный ID заказа"}, http.StatusBadRequest)
 		return
 	}
 
-	if !s.DeleteTask(orderID, taskID) {
-		respondError(w, "Order or task not found", http.StatusNotFound)
+	taskID, err := extractIDFromPath(vars, "taskId")
+	if err != nil {
+		writeErrorResponse(w, ErrInvalidInput{Field: "taskId", Message: "невалидный ID задачи"}, http.StatusBadRequest)
+		return
+	}
+
+	if err := h.service.DeleteTask(orderID, taskID); err != nil {
+		if _, ok := err.(ErrOrderNotFound); ok {
+			writeErrorResponse(w, err, http.StatusNotFound)
+		} else if _, ok := err.(ErrTaskNotFound); ok {
+			writeErrorResponse(w, err, http.StatusNotFound)
+		} else {
+			writeErrorResponse(w, err, http.StatusInternalServerError)
+		}
 		return
 	}
 
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func (s *Storage) handleUpdateTaskPredecessors(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) UpdateTaskPredecessors(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	orderID, err := parseIDFromRequest(vars, "orderId")
+	orderID, err := extractIDFromPath(vars, "orderId")
 	if err != nil {
-		respondError(w, "Invalid order ID", http.StatusBadRequest)
+		writeErrorResponse(w, ErrInvalidInput{Field: "orderId", Message: "невалидный ID заказа"}, http.StatusBadRequest)
 		return
 	}
-	taskID, err := parseIDFromRequest(vars, "taskId")
+
+	taskID, err := extractIDFromPath(vars, "taskId")
 	if err != nil {
-		respondError(w, "Invalid task ID", http.StatusBadRequest)
+		writeErrorResponse(w, ErrInvalidInput{Field: "taskId", Message: "невалидный ID задачи"}, http.StatusBadRequest)
 		return
 	}
 
-	var data struct {
-		Pred []int `json:"pred"`
-	}
-
-	if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
-		respondError(w, "Invalid request body", http.StatusBadRequest)
+	var req UpdatePredecessorsRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeErrorResponse(w, ErrInvalidInput{Field: "body", Message: "невалидный JSON"}, http.StatusBadRequest)
 		return
 	}
 
-	task, exists := s.UpdateTaskPredecessors(orderID, taskID, data.Pred)
-	if !exists {
-		respondError(w, "Order or task not found", http.StatusNotFound)
+	task, err := h.service.UpdateTaskPredecessors(orderID, taskID, req)
+	if err != nil {
+		if _, ok := err.(ErrOrderNotFound); ok {
+			writeErrorResponse(w, err, http.StatusNotFound)
+		} else if _, ok := err.(ErrTaskNotFound); ok {
+			writeErrorResponse(w, err, http.StatusNotFound)
+		} else {
+			writeErrorResponse(w, err, http.StatusInternalServerError)
+		}
 		return
 	}
 
-	respondJSON(w, task, http.StatusOK)
+	writeJSONResponse(w, task, http.StatusOK)
 }

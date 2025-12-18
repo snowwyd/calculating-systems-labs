@@ -30,9 +30,9 @@ stop-services.bat
 
 ## Использование GraphQL
 
-### GraphiQL UI
+### GraphQL Endpoint
 
-Откройте в браузере: **http://localhost:8080**
+Отправляйте запросы на: **http://localhost:8080/graphql**
 
 ## GraphQL Schema
 

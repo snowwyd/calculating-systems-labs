@@ -12,8 +12,10 @@ import (
 )
 
 const (
-	productServiceURL = "http://localhost:8081"
-	orderServiceURL   = "http://localhost:8082"
+	productServiceBaseURL = "http://localhost:8081"
+	orderServiceBaseURL   = "http://localhost:8082"
+	serverPort            = ":8080"
+	requestTimeout        = 10 * time.Second
 )
 
 // Модели данных
@@ -36,14 +38,14 @@ type Order struct {
 }
 
 // HTTP клиент с таймаутом
-var httpClient = &http.Client{
-	Timeout: 10 * time.Second,
+var restClient = &http.Client{
+	Timeout: requestTimeout,
 }
 
 // Функции для вызова REST API
 
-func fetchProducts() ([]Product, error) {
-	resp, err := httpClient.Get(productServiceURL + "/products")
+func getProductsFromService() ([]Product, error) {
+	resp, err := restClient.Get(productServiceBaseURL + "/products")
 	if err != nil {
 		return nil, err
 	}
@@ -62,8 +64,8 @@ func fetchProducts() ([]Product, error) {
 	return products, nil
 }
 
-func fetchProduct(id string) (*Product, error) {
-	resp, err := httpClient.Get(productServiceURL + "/products/" + id)
+func getProductFromService(id string) (*Product, error) {
+	resp, err := restClient.Get(productServiceBaseURL + "/products/" + id)
 	if err != nil {
 		return nil, err
 	}
@@ -86,8 +88,8 @@ func fetchProduct(id string) (*Product, error) {
 	return &product, nil
 }
 
-func fetchOrders() ([]Order, error) {
-	resp, err := httpClient.Get(orderServiceURL + "/orders")
+func getOrdersFromService() ([]Order, error) {
+	resp, err := restClient.Get(orderServiceBaseURL + "/orders")
 	if err != nil {
 		return nil, err
 	}
@@ -106,8 +108,8 @@ func fetchOrders() ([]Order, error) {
 	return orders, nil
 }
 
-func fetchOrder(id string) (*Order, error) {
-	resp, err := httpClient.Get(orderServiceURL + "/orders/" + id)
+func getOrderFromService(id string) (*Order, error) {
+	resp, err := restClient.Get(orderServiceBaseURL + "/orders/" + id)
 	if err != nil {
 		return nil, err
 	}
@@ -132,7 +134,7 @@ func fetchOrder(id string) (*Order, error) {
 
 // GraphQL типы
 
-var productType = graphql.NewObject(graphql.ObjectConfig{
+var productGraphQLType = graphql.NewObject(graphql.ObjectConfig{
 	Name: "Product",
 	Fields: graphql.Fields{
 		"id": &graphql.Field{
@@ -153,7 +155,7 @@ var productType = graphql.NewObject(graphql.ObjectConfig{
 	},
 })
 
-var orderType = graphql.NewObject(graphql.ObjectConfig{
+var orderGraphQLType = graphql.NewObject(graphql.ObjectConfig{
 	Name: "Order",
 	Fields: graphql.Fields{
 		"id": &graphql.Field{
@@ -178,21 +180,21 @@ var orderType = graphql.NewObject(graphql.ObjectConfig{
 			Type: graphql.String,
 		},
 		"product": &graphql.Field{
-			Type: productType,
+			Type: productGraphQLType,
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 				// Проверяем разные типы источников данных
 				switch order := p.Source.(type) {
 				case *Order:
-					return fetchProduct(order.ProductID)
+					return getProductFromService(order.ProductID)
 				case map[string]interface{}:
 					if productID, ok := order["product_id"].(string); ok && productID != "" {
-						return fetchProduct(productID)
+						return getProductFromService(productID)
 					}
 					if productID, ok := order["productId"].(string); ok && productID != "" {
-						return fetchProduct(productID)
+						return getProductFromService(productID)
 					}
 				case Order:
-					return fetchProduct(order.ProductID)
+					return getProductFromService(order.ProductID)
 				}
 				return nil, nil
 			},
@@ -201,17 +203,17 @@ var orderType = graphql.NewObject(graphql.ObjectConfig{
 })
 
 // Query
-var rootQuery = graphql.NewObject(graphql.ObjectConfig{
+var queryType = graphql.NewObject(graphql.ObjectConfig{
 	Name: "Query",
 	Fields: graphql.Fields{
 		"products": &graphql.Field{
-			Type: graphql.NewList(productType),
+			Type: graphql.NewList(productGraphQLType),
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				return fetchProducts()
+				return getProductsFromService()
 			},
 		},
 		"product": &graphql.Field{
-			Type: productType,
+			Type: productGraphQLType,
 			Args: graphql.FieldConfigArgument{
 				"id": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.String),
@@ -219,17 +221,17 @@ var rootQuery = graphql.NewObject(graphql.ObjectConfig{
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 				id := p.Args["id"].(string)
-				return fetchProduct(id)
+				return getProductFromService(id)
 			},
 		},
 		"orders": &graphql.Field{
-			Type: graphql.NewList(orderType),
+			Type: graphql.NewList(orderGraphQLType),
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				return fetchOrders()
+				return getOrdersFromService()
 			},
 		},
 		"order": &graphql.Field{
-			Type: orderType,
+			Type: orderGraphQLType,
 			Args: graphql.FieldConfigArgument{
 				"id": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.String),
@@ -237,18 +239,18 @@ var rootQuery = graphql.NewObject(graphql.ObjectConfig{
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 				id := p.Args["id"].(string)
-				return fetchOrder(id)
+				return getOrderFromService(id)
 			},
 		},
 	},
 })
 
 // Schema
-var schema, _ = graphql.NewSchema(graphql.SchemaConfig{
-	Query: rootQuery,
+var graphQLSchema, _ = graphql.NewSchema(graphql.SchemaConfig{
+	Query: queryType,
 })
 
-func executeQuery(query string, schema graphql.Schema) *graphql.Result {
+func processGraphQLQuery(query string, schema graphql.Schema) *graphql.Result {
 	result := graphql.Do(graphql.Params{
 		Schema:        schema,
 		RequestString: query,
@@ -259,79 +261,26 @@ func executeQuery(query string, schema graphql.Schema) *graphql.Result {
 	return result
 }
 
-func graphqlHandler(w http.ResponseWriter, r *http.Request) {
-	var reqBody struct {
+func handleGraphQLRequest(w http.ResponseWriter, r *http.Request) {
+	var requestBody struct {
 		Query string `json:"query"`
 	}
 
-	if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
 		http.Error(w, "Invalid request", http.StatusBadRequest)
 		return
 	}
 
-	result := executeQuery(reqBody.Query, schema)
+	result := processGraphQLQuery(requestBody.Query, graphQLSchema)
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(result)
 }
 
-func graphiqlHandler(w http.ResponseWriter, r *http.Request) {
-	html := `
-	<!DOCTYPE html>
-	<html>
-	<head>
-		<title>GraphQL Gateway</title>
-		<style>
-			body {
-				height: 100vh;
-				margin: 0;
-				width: 100%;
-				overflow: hidden;
-				font-family: Arial, sans-serif;
-			}
-			#graphiql {
-				height: 100vh;
-			}
-		</style>
-		<link rel="stylesheet" href="https://unpkg.com/graphiql/graphiql.min.css" />
-	</head>
-	<body>
-		<div id="graphiql">Loading...</div>
-		<script
-			crossorigin
-			src="https://unpkg.com/react/umd/react.production.min.js"
-		></script>
-		<script
-			crossorigin
-			src="https://unpkg.com/react-dom/umd/react-dom.production.min.js"
-		></script>
-		<script
-			crossorigin
-			src="https://unpkg.com/graphiql/graphiql.min.js"
-		></script>
-		<script>
-			const fetcher = GraphiQL.createFetcher({
-				url: '/graphql',
-			});
-			ReactDOM.render(
-				React.createElement(GraphiQL, { fetcher: fetcher }),
-				document.getElementById('graphiql'),
-			);
-		</script>
-	</body>
-	</html>
-	`
-	w.Header().Set("Content-Type", "text/html")
-	w.Write([]byte(html))
-}
-
 func main() {
-	http.HandleFunc("/graphql", graphqlHandler)
-	http.HandleFunc("/", graphiqlHandler)
+	http.HandleFunc("/graphql", handleGraphQLRequest)
 
-	log.Println("GraphQL Gateway запущен на :8080")
-	log.Println("GraphiQL UI: http://localhost:8080")
-	log.Println("GraphQL endpoint: http://localhost:8080/graphql")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Printf("GraphQL Gateway запущен на %s\n", serverPort)
+	log.Printf("GraphQL endpoint: http://localhost%s/graphql\n", serverPort)
+	log.Fatal(http.ListenAndServe(serverPort, nil))
 }
-

@@ -8,8 +8,11 @@ import (
 const serverPort = ":8080"
 
 func main() {
-	storage := NewStorage()
-	router := SetupRoutes(storage)
+	// Инициализация зависимостей
+	repository := NewInMemoryRepository()
+	service := NewOrderService(repository, repository)
+	handler := NewHandler(service)
+	router := SetupRoutes(handler)
 
 	log.Printf("Сервер запущен на %s\n", serverPort)
 	if err := http.ListenAndServe(serverPort, router); err != nil {
