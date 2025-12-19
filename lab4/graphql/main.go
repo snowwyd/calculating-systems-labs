@@ -132,7 +132,7 @@ func getOrderFromService(id string) (*Order, error) {
 	return &order, nil
 }
 
-// GraphQL типы
+// GraphQL типы данных
 
 var productGraphQLType = graphql.NewObject(graphql.ObjectConfig{
 	Name: "Product",
@@ -280,7 +280,7 @@ func handleGraphQLRequest(w http.ResponseWriter, r *http.Request) {
 func main() {
 	http.HandleFunc("/graphql", handleGraphQLRequest)
 
-	log.Printf("GraphQL Gateway запущен на %s\n", serverPort)
+	log.Printf("GraphQL запущен на %s\n", serverPort)
 	log.Printf("GraphQL endpoint: http://localhost%s/graphql\n", serverPort)
 	log.Fatal(http.ListenAndServe(serverPort, nil))
 }
