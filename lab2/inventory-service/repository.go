@@ -106,7 +106,7 @@ func InitDatabase(connStr string) (*sql.DB, error) {
 		quantity NUMERIC NOT NULL,
 		current_price VARCHAR NOT NULL
 	)`
-	
+
 	if _, err := db.Exec(createTable); err != nil {
 		db.Close()
 		return nil, fmt.Errorf("ошибка создания таблицы: %w", err)
@@ -114,4 +114,3 @@ func InitDatabase(connStr string) (*sql.DB, error) {
 
 	return db, nil
 }
-
