@@ -26,12 +26,12 @@ type OrderItem struct {
 }
 
 type Notification struct {
-	NotificationID string  `json:"notification_id"`
-	Type           string  `json:"type"`
-	OrderID        string  `json:"order_id"`
-	CustomerID     string  `json:"customer_id"`
-	Message        string  `json:"message"`
-	ReceivedAt     string  `json:"received_at"`
+	NotificationID string `json:"notification_id"`
+	Type           string `json:"type"`
+	OrderID        string `json:"order_id"`
+	CustomerID     string `json:"customer_id"`
+	Message        string `json:"message"`
+	ReceivedAt     string `json:"received_at"`
 }
 
 const (
@@ -153,4 +153,3 @@ func main() {
 
 	<-forever
 }
-

@@ -66,7 +66,7 @@ var (
 
 func initRabbitMQ() error {
 	var err error
-	
+
 	// Повторные попытки подключения
 	for i := 0; i < 10; i++ {
 		rabbitConn, err = amqp.Dial(rabbitMQURL)
@@ -76,7 +76,7 @@ func initRabbitMQ() error {
 		log.Printf("Попытка подключения к RabbitMQ (%d/10)...", i+1)
 		time.Sleep(2 * time.Second)
 	}
-	
+
 	if err != nil {
 		return fmt.Errorf("не удалось подключиться к RabbitMQ: %w", err)
 	}
@@ -109,11 +109,11 @@ func checkInventory(productCode string, quantity int) (bool, string, error) {
 	}
 
 	jsonData, _ := json.Marshal(checkReq)
-	
+
 	client := &http.Client{
 		Timeout: 10 * time.Second,
 	}
-	
+
 	resp, err := client.Post(
 		inventoryServiceURL+"/inventory/check",
 		"application/json",
@@ -139,11 +139,11 @@ func reserveInventory(productCode string, quantity int) error {
 	}
 
 	jsonData, _ := json.Marshal(reserveReq)
-	
+
 	client := &http.Client{
 		Timeout: 10 * time.Second,
 	}
-	
+
 	resp, err := client.Post(
 		inventoryServiceURL+"/inventory/reserve",
 		"application/json",
@@ -296,4 +296,3 @@ func main() {
 	log.Println("Order Service запущен на :8082")
 	log.Fatal(http.ListenAndServe(":8082", r))
 }
-
